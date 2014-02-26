@@ -7,7 +7,7 @@ import com.twitter.finagle.filter.{ExceptionSourceFilter, MonitorFilter}
 import com.twitter.finagle.loadbalancer.{LoadBalancerFactory, HeapBalancerFactory}
 import com.twitter.finagle.service._
 import com.twitter.finagle.stats.{
-  BroadcastStatsReceiver, ClientStatsReceiver, NullStatsReceiver, RollupStatsReceiver, 
+  BroadcastStatsReceiver, ClientStatsReceiver, NullStatsReceiver, RollupStatsReceiver,
   StatsReceiver}
 import com.twitter.finagle.tracing._
 import com.twitter.finagle.util.{
@@ -44,7 +44,7 @@ object StackClient {
 
     def apply(statsReceiver: StatsReceiver) = new Stats(statsReceiver)
 
-    def unapply(stats: Stats): Option[(StatsReceiver, StatsReceiver)] = 
+    def unapply(stats: Stats): Option[(StatsReceiver, StatsReceiver)] =
       Some((stats.statsReceiver, stats.rawStatsReceiver))
   }
 
@@ -109,7 +109,7 @@ object StackClient {
       val Stats(statsReceiver, _) = params[Stats]
       val Timer(timer) = params[Timer]
 
-      new FailFastFactory(next, statsReceiver.scope("failfast"), timer) 
+      new FailFastFactory(next, statsReceiver.scope("failfast"), timer)
     }
   }
 
@@ -127,20 +127,20 @@ object StackClient {
       val Timer(timer) = params[Timer]
 
       val stack = new StackBuilder[F[Req, Rep]](next)
- 
+
       if (idleTime > 0.seconds || high > low) {
          stack.push("pool.cache", (fac: ServiceFactory[Req, Rep]) =>
            new CachingPool(fac, high-low, idleTime, timer, statsReceiver))
       }
- 
+
       stack.push("pool.watermark", (fac: ServiceFactory[Req, Rep]) =>
         new WatermarkPool(fac, low, high, statsReceiver, maxWaiters))
 
       if (bufferSize > 0) {
-        stack.push("pool.buffer", (fac: ServiceFactory[Req, Rep]) => 
+        stack.push("pool.buffer", (fac: ServiceFactory[Req, Rep]) =>
           new BufferingPool(fac, bufferSize))
       }
-   
+
       stack.result
     }
   }
@@ -149,7 +149,7 @@ object StackClient {
   implicit object RequestTimeout extends Stack.Param[RequestTimeout] {
     val default = RequestTimeout(Duration.Top)
   }
-  
+
   def requestTimeout[Req, Rep] = new Stack.Simple[F[Req, Rep]]("requesttimeout") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val RequestTimeout(timeout) = params[RequestTimeout]
@@ -166,7 +166,7 @@ object StackClient {
   implicit object FailureAccrual extends Stack.Param[FailureAccrual] {
     val default = FailureAccrual(5, 5.seconds)
   }
-  
+
   def failureAccrual[Req, Rep] = new Stack.Simple[F[Req, Rep]]("failureaccrual") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val FailureAccrual(n, d) = params[FailureAccrual]
@@ -174,7 +174,7 @@ object StackClient {
       FailureAccrualFactory.wrapper(n, d)(timer) andThen next
     }
   }
-  
+
   def factoryStats[Req, Rep] = new Stack.Simple[F[Req, Rep]]("factorystats") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val Stats(statsReceiver, _) = params[Stats]
@@ -190,7 +190,7 @@ object StackClient {
       else new StatsFilter(statsReceiver) andThen next
     }
   }
-  
+
   def tracing[Req, Rep] = new Stack.Simple[F[Req, Rep]]("tracing") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val EndpointAddr(addr) = params[EndpointAddr]
@@ -202,7 +202,7 @@ object StackClient {
   implicit object Monitoring extends Stack.Param[Monitoring] {
     val default = Monitoring(DefaultMonitor, LoadedReporterFactory)
   }
-  
+
   def monitoring[Req, Rep] = new Stack.Simple[F[Req, Rep]]("monitoring") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val Monitoring(monitor, reporter) = params[Monitoring]
@@ -213,7 +213,7 @@ object StackClient {
       new MonitorFilter(composite) andThen next
     }
   }
-  
+
   def exceptionSource[Req, Rep] = new Stack.Simple[F[Req, Rep]]("exceptionsource") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val Label(label) = params[Label]
@@ -254,7 +254,7 @@ object StackClient {
   implicit object LoadBalancer extends Stack.Param[LoadBalancer] {
     val default = LoadBalancer(HeapBalancerFactory, Var.value(Addr.Neg))
   }
-  
+
   def loadBalancer[Req, Rep] = new Stack.Module[F[Req, Rep]]("loadbalancer") {
     def make(params: Params, next: Stack[F[Req, Rep]]): Stack[F[Req, Rep]] = {
       val LoadBalancer(loadBalancerFactory, dest) = params[LoadBalancer]
@@ -265,7 +265,7 @@ object StackClient {
 
       val noBrokersException = new NoBrokersAvailableException(label)
 
-      // TODO: load balancer consumes Var[Addr] directly., 
+      // TODO: load balancer consumes Var[Addr] directly.,
       // or at least Var[SocketAddress]
       val g = Group.mutable[SocketAddress]()
       dest observe {
@@ -275,7 +275,7 @@ object StackClient {
           g() = Set()
           log.log(Level.WARNING, "Name binding failure", e)
         case Addr.Delegated(where) =>
-          log.log(Level.WARNING, 
+          log.log(Level.WARNING,
             "Name was delegated to %s, but delegation is not supported".format(where))
           g() = Set()
         case Addr.Pending =>
@@ -289,7 +289,7 @@ object StackClient {
       val endpoints = g map { sockaddr =>
         val stats = if (hostStatsReceiver.isNull) statsReceiver else {
           val scope = sockaddr match {
-            case ia: InetSocketAddress => 
+            case ia: InetSocketAddress =>
               "%s:%d".format(ia.getHostName, ia.getPort)
             case other => other.toString
           }
@@ -297,13 +297,13 @@ object StackClient {
           BroadcastStatsReceiver(Seq(host, statsReceiver))
         }
 
-        next.make(params + 
-          EndpointAddr(sockaddr) + 
+        next.make(params +
+          EndpointAddr(sockaddr) +
           Stats(stats))
       }
 
       val balanced = loadBalancerFactory.newLoadBalancer(
-        endpoints, rawStatsReceiver.scope("loadbalancer"), 
+        endpoints, rawStatsReceiver.scope("loadbalancer"),
         noBrokersException)
 
       // observeUntil fails the future on interrupts, but ready
@@ -311,7 +311,7 @@ object StackClient {
       // this future--interrupts will not be propagated to it
       val ready = dest.observeUntil(_ != Addr.Pending)
       val f = ready map (_ => balanced)
-      
+
       Stack.Leaf("loadbalancer", new DelayedFactory(f))
     }
   }
@@ -320,26 +320,26 @@ object StackClient {
   implicit object ServiceTimeout extends Stack.Param[ServiceTimeout] {
     val default = ServiceTimeout(Duration.Top)
   }
-  
+
   def serviceTimeout[Req, Rep] = new Stack.Simple[F[Req, Rep]]("servicetimeout") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val ServiceTimeout(timeout) = params[ServiceTimeout]
       val Label(label) = params[Label]
       val Timer(timer) = params[Timer]
-      
+
       val exc = new ServiceTimeoutException(timeout)
       exc.serviceName = label
-      new TimeoutFactory(next, timeout, exc, timer)    
+      new TimeoutFactory(next, timeout, exc, timer)
     }
   }
-  
+
   def clientStats[Req, Rep] = new Stack.Simple[F[Req, Rep]]("clientstats") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val Stats(statsReceiver, _) = params[Stats]
       new StatsFactoryWrapper(next, statsReceiver)
     }
   }
-  
+
   def clientTracer[Req, Rep] = new Stack.Simple[F[Req, Rep]]("clienttracer") {
     def make(params: Params, next: F[Req, Rep]): F[Req, Rep] = {
       val Tracer(tracer) = params[Tracer]
@@ -351,7 +351,7 @@ object StackClient {
     val stack = new StackBuilder(endpointStack[Req, Rep])
     stack.push(loadBalancer)
     stack.push(serviceTimeout)
-    stack.push("refcounted", (fac: ServiceFactory[Req, Rep]) => 
+    stack.push("refcounted", (fac: ServiceFactory[Req, Rep]) =>
       new RefcountedFactory(fac))
     stack.push(clientStats)
     stack.push(clientTracer)
@@ -364,19 +364,19 @@ object StackClient {
  */
 private[finagle]
 class StackClient[Req, Rep](
-  val stack: Stack[ServiceFactory[Req, Rep]], 
+  val stack: Stack[ServiceFactory[Req, Rep]],
   params: Stack.Params = Stack.Params.empty)
   extends Client[Req, Rep] {
 
   def this(endpoint: Stackable[ServiceFactory[Req, Rep]]) =
-    this(StackClient.clientStack[Req, Rep] ++ 
+    this(StackClient.clientStack[Req, Rep] ++
       endpoint.toStack(StackClient.nilStack))
 
   def configured[P: Stack.Param](p: P): StackClient[Req, Rep] =
     new StackClient(stack, params + p)
 
   def newClient(dest: Name, label: String): ServiceFactory[Req, Rep] =
-    stack.make(params + 
+    stack.make(params +
       params[StackClient.LoadBalancer].copy(dest=dest.bind()) +
       StackClient.Label(label))
 }
@@ -385,7 +385,7 @@ class StackClient[Req, Rep](
  * A [[com.twitter.finagle.Stack Stack]]-based client which
  * preserves "rich" client semantics.
  */
-private[finagle] 
+private[finagle]
 abstract class RichStackClient[Req, Rep, This <: RichStackClient[Req, Rep, This]](
   client: StackClient[Req, Rep]) extends Client[Req, Rep] {
   protected def newRichClient(client: StackClient[Req, Rep]): This

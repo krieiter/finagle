@@ -14,7 +14,7 @@ class PathTest extends FunSuite {
     assert(Path.join("//a/b", "") === "/a/b")
     assert(Path.join("", "/a/b/") === "/a/b")
   }
-  
+
   test("Path.split") {
     assert(Path.split("/a//b/c/d/e/") === Seq("a", "b", "c", "d", "e"))
   }

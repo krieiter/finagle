@@ -34,7 +34,7 @@ private object SeqObj {
 
 private object DictObj {
   def unapply(o: Object): Option[Object => Option[Object]] = o match {
-    case m: java.util.Map[_, _] => 
+    case m: java.util.Map[_, _] =>
       val mm = m.asInstanceOf[java.util.Map[Object, Object]]
       Some(key => Option(mm.get(key)))
     case _ => None
@@ -44,7 +44,7 @@ private object DictObj {
 private object JsonDict {
   def apply(json: String): (Object => Option[Object]) = {
     val m = new ObjectMapper
-    val o = try m.readValue(json, classOf[java.util.Map[Object, Object]]) catch { 
+    val o = try m.readValue(json, classOf[java.util.Map[Object, Object]]) catch {
       case NonFatal(_) => return Function.const(None)
     }
 

@@ -67,7 +67,7 @@ object ThriftBufferedListener {
  * [[com.twitter.finagle.thrift.ThriftClient]].
  */
 private[finagle] class ThriftServer(
-    listener: Listener[Array[Byte], Array[Byte]], 
+    listener: Listener[Array[Byte], Array[Byte]],
     protocolFactory: TProtocolFactory
 ) extends DefaultServer[Array[Byte], Array[Byte], Array[Byte], Array[Byte]](
     "thrift", listener, new SerialServerDispatcher(_, _),
@@ -75,7 +75,7 @@ private[finagle] class ThriftServer(
        new InetSocketAddress(0)).prepare(_))
 {
   override def serve(
-    addr: SocketAddress, 
+    addr: SocketAddress,
     factory: ServiceFactory[Array[Byte], Array[Byte]]
   ): ListeningServer = {
     val boundAddr = addr match {
@@ -83,9 +83,9 @@ private[finagle] class ThriftServer(
       case _ => new InetSocketAddress(0)
     }
     val serviceName = ServerRegistry.nameOf(addr) getOrElse "unknown"
-    val newPrepare = ThriftServerPreparer(protocolFactory, 
+    val newPrepare = ThriftServerPreparer(protocolFactory,
       serviceName, boundAddr).prepare(_)
-    // This is subtle: copy() downgrades this to a DefaultServer, 
+    // This is subtle: copy() downgrades this to a DefaultServer,
     // and so fails to recurse.
     copy(prepare = newPrepare).serve(addr, factory)
   }

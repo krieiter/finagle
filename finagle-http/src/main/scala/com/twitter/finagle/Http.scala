@@ -44,9 +44,9 @@ object HttpListener extends Netty3Listener[Any, Any](
   http.Http().server(ServerCodecConfig("httpserver", new SocketAddress{})).pipelineFactory
 )
 
-object HttpServer 
+object HttpServer
 extends DefaultServer[HttpRequest, HttpResponse, Any, Any](
-  "http", HttpListener, 
+  "http", HttpListener,
   {
     val dtab = new DtabFilter[HttpRequest, HttpResponse]
     (t, s) => new HttpServerDispatcher(
@@ -76,7 +76,7 @@ package exp {
 private[finagle]
 object HttpNetty3Stack
   extends Netty3Stack[Any, Any, HttpRequest, HttpResponse](
-  "http", 
+  "http",
   http.Http()
     .enableTracing(true)
     .client(ClientCodecConfig("httpclient")).pipelineFactory,
@@ -86,7 +86,7 @@ private[finagle]
 class HttpClient(client: StackClient[HttpRequest, HttpResponse])
   extends RichStackClient[HttpRequest, HttpResponse, HttpClient](client)
   with HttpRichClient {
-  protected def newRichClient(client: StackClient[HttpRequest, HttpResponse]) = 
+  protected def newRichClient(client: StackClient[HttpRequest, HttpResponse]) =
     new HttpClient(client)
 }
 

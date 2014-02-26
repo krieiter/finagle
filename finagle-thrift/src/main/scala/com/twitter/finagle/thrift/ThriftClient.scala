@@ -21,7 +21,7 @@ private object ThriftFramedTransportPipelineFactory extends ChannelPipelineFacto
   }
 }
 
-private[finagle] object ThriftFramedTransporter 
+private[finagle] object ThriftFramedTransporter
   extends Netty3Transporter[ThriftClientRequest, Array[Byte]](
     name = "thrift",
     pipelineFactory = ThriftFramedTransportPipelineFactory
@@ -66,11 +66,11 @@ object ThriftBufferedTransporter {
  * and the standard protocol is used. If the remote server is also a
  * finagle server (or any other supporting this extension), we reply
  * to the request, and every subsequent request is dispatched with an
- * envelope carrying trace metadata. The envelope itself is also a 
+ * envelope carrying trace metadata. The envelope itself is also a
  * Thrift struct described [[https://github.com/twitter/finagle/blob/master/finagle-thrift/src/main/thrift/tracing.thrift here]].
  */
 class ThriftClient(
-    transporter: (SocketAddress, StatsReceiver) => 
+    transporter: (SocketAddress, StatsReceiver) =>
       Future[Transport[ThriftClientRequest, Array[Byte]]],
     protocolFactory: TProtocolFactory,
     serviceName: String = "unknown",

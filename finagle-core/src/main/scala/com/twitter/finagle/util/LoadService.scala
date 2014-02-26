@@ -18,7 +18,7 @@ import scala.io.Source
 private object ClassPath {
 
   private val ignoredPackages = Seq(
-    "apple/", "ch/epfl/", "com/apple/", "com/oracle/", 
+    "apple/", "ch/epfl/", "com/apple/", "com/oracle/",
     "com/sun/", "java/", "javax/", "scala/", "sun/", "sunw/")
 
   /**
@@ -65,7 +65,7 @@ private object ClassPath {
         }
       case _ =>
     }
-    
+
     ents
   }
 
@@ -83,7 +83,7 @@ private object ClassPath {
   }
 
   private def browseDir(
-      dir: File, loader: ClassLoader, 
+      dir: File, loader: ClassLoader,
       prefix: String, buf: mutable.Buffer[Info]) {
     if (ignoredPackages contains prefix)
       return
@@ -162,7 +162,7 @@ object LoadService {
         cls <- clss
         if cls.nonEmpty
       } yield (iface -> cls)
-    
+
       mappings.foldLeft(Map[String, Set[String]]()) {
         case (m, (iface, cls)) =>
           m + (iface -> (m.getOrElse(iface, Set()) + cls))

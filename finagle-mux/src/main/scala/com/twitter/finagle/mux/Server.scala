@@ -32,7 +32,7 @@ private[finagle] class ServerDispatcher(
 
   // TODO: rewrite Treqs into Tdispatches?
 
-  @volatile private[this] var receive: Message => Unit = { 
+  @volatile private[this] var receive: Message => Unit = {
     case Tdispatch(tag, contexts, /*ignore*/_dst, dtab, req) =>
       if (!canDispatch) {
         // There seems to be a bug in the Scala pattern matcher:

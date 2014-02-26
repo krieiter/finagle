@@ -82,11 +82,11 @@ object Stack {
    * Nodes materialize by transforming the underlying stack in
    * some way.
    */
-  case class Node[T](id: String, mk: (Params, Stack[T]) => Stack[T], next: Stack[T]) 
+  case class Node[T](id: String, mk: (Params, Stack[T]) => Stack[T], next: Stack[T])
     extends Stack[T] {
     def make(params: Params) = mk(params, next).make(params)
   }
-  
+
   object Node {
     /**
      * A constructor for a 'simple' Node.
@@ -127,7 +127,7 @@ object Stack {
      * Get the current value of the P-typed parameter.
      */
     def apply[P: Param]: P
-    
+
     /**
      * Produce a new parameter map, overriding any previous
      * `P`-typed value.
@@ -143,10 +143,10 @@ object Stack {
           case None => param.default
         }
 
-      def +[P](p: P)(implicit param: Param[P]): Params = 
+      def +[P](p: P)(implicit param: Param[P]): Params =
         copy(map + (param -> p))
     }
-    
+
     /**
      * The empty parameter map.
      */
@@ -170,10 +170,10 @@ object Stack {
     type Params = Stack.Params
     def make(params: Params, next: T): T
 
-    def toStack(next: Stack[T]) = 
+    def toStack(next: Stack[T]) =
       Node(id, (params, next) => Leaf(id, make(params, next.make(params))), next)
   }
-  
+
   /**
    * A convenience class to construct stackable modules. This variant
    * operates over stacks. Useful for building stack elements:
@@ -192,7 +192,7 @@ object Stack {
     type Params = Stack.Params
     def make(params: Params, next: Stack[T]): Stack[T]
 
-    def toStack(next: Stack[T]) = 
+    def toStack(next: Stack[T]) =
       Node(id, (params, next) => make(params, next), next)
   }
 }
@@ -232,7 +232,7 @@ class StackBuilder[T](init: Stack[T]) {
   def this(id: String, end: T) = this(Stack.Leaf(id, end))
 
   private[this] var stack = init
-  
+
   /**
    * Push the stack element `el` onto the stack; el must conform to
    * typeclass [[com.twitter.finagle.CanStackFrom CanStackFrom]].
@@ -255,12 +255,12 @@ class StackBuilder[T](init: Stack[T]) {
    * Get the current stack as defined by the builder.
    */
   def result: Stack[T] = stack
-  
+
   /**
-   * Materialize the current stack: equivalent to 
+   * Materialize the current stack: equivalent to
    * `result.make()`.
    */
   def make(params: Stack.Params): T = result.make(params)
-  
+
   override def toString = "Builder(%s)".format(stack)
 }

@@ -24,7 +24,7 @@ class Context {
   val s1, s2, s3, s4, s5, s6, s7, s8, s9, s10 = new SocketAddress{}
   val allAddrs = Set(s1,s2,s3,s4,s5,s6,s7,s8,s9,s10)
 
-  object addrs { 
+  object addrs {
     val broker = new Broker[Addr]
     val offer = broker.recv
     @volatile var set = Set.empty[SocketAddress]
@@ -49,13 +49,13 @@ class Context {
     grace,
     statsRecv.scope("testGroup"),
     timer)
-  
+
   @volatile var stabilized: Addr = Addr.Pending
   for (addr <- stabilizedAddr)
     stabilized = addr
-  
+
   addrs() = allAddrs
-  
+
   def assertStable() {
     assert(stabilized == Addr.Bound(addrs()))
   }
@@ -147,7 +147,7 @@ class StabilizingAddrTest extends FunSuite {
       import ctx._
 
       healthStatus.mkHealthy()
-      
+
       addrs() = Set.empty
       tc.advance(grace/2)
       addrs() = Set(s5)
@@ -190,7 +190,7 @@ class StabilizingAddrTest extends FunSuite {
       assert(stabilized === Addr.Bound(Set(s1,s2)))
       tc.advance(grace/2); timer.tick()
       assert(stabilized === Addr.Neg)
-      
+
       addrs() = Set(s1,s2)
       assertStable()
     }

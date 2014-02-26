@@ -32,7 +32,7 @@ trait Name {
    * The reified version of the Name -- a resolvable string.
    */
   def reified: String
-  
+
   override def toString = "Name("+reified+")"
 }
 
@@ -100,6 +100,6 @@ private case class PartialName(
 
   override def enter(path: String): Name =
     PartialName(parent, Path.join(this.path, path))
-  
+
   val reified = "fail!"
 }

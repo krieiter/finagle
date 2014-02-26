@@ -30,14 +30,14 @@ private object P2CBalancer {
     new FailingFactory(new NoBrokersAvailableException),
     1.0
   )
-  
+
   /**
    * A vector of Nodes over which we load balance using biased
    * coin flipping using [[com.twitter.finagle.util.Drv Drv]].
    *
    * Unavailable nodes are assigned a weight of 0.
    */
-  case class Nodes[-Req, +Rep](vector: IndexedSeq[Node[Req, Rep]], rng: Rng) 
+  case class Nodes[-Req, +Rep](vector: IndexedSeq[Node[Req, Rep]], rng: Rng)
       extends Traversable[Node[Req, Rep]]
       with Closable {
     private[this] val weights = new Array[Double](vector.size)
@@ -62,7 +62,7 @@ private object P2CBalancer {
 
     def foreach[T](f: Node[Req, Rep] => T) = vector.foreach(f)
     override val size = vector.size
-    
+
     /**
      * Are there any revivable nodes in the down-set?
      */
@@ -84,7 +84,7 @@ private object P2CBalancer {
     def pick2(): Node[Req, Rep] = {
       if (vector.isEmpty)
         return failingNode
-        
+
       // TODO: determine whether we want to pick according to
       // discretized weights. that is, for fractional load/weight,
       // should we flip another coin according to the implied ratio?
@@ -104,7 +104,7 @@ private object P2CBalancer {
    * Operations representing updates to the node vectors.
    */
   sealed trait Update[Req, Rep] { val pri: Int }
-  case class Rebuild[Req, Rep](newList: Traversable[(ServiceFactory[Req, Rep], Double)]) 
+  case class Rebuild[Req, Rep](newList: Traversable[(ServiceFactory[Req, Rep], Double)])
       extends Update[Req, Rep] { val pri = 0 }
   case class Reweigh[Req, Rep](cur: Nodes[Req, Rep])
       extends Update[Req, Rep] { val pri = 1 }
@@ -136,7 +136,7 @@ private object P2CBalancer {
  * [1] Michael Mitzenmacher. 2001. The Power of Two Choices in
  * Randomized Load Balancing. IEEE Trans. Parallel Distrib. Syst. 12,
  * 10 (October 2001), 1094-1104.
- */ 
+ */
 class P2CBalancer[Req, Rep](
   underlying: Var[Traversable[(ServiceFactory[Req, Rep], Double)]],
   maxEffort: Int = 5,
@@ -144,7 +144,7 @@ class P2CBalancer[Req, Rep](
   statsReceiver: StatsReceiver = NullStatsReceiver
 ) extends ServiceFactory[Req, Rep] {
   import P2CBalancer._
-  
+
   require(maxEffort > 0)
 
   private[this] val sizeGauge = statsReceiver.addGauge("size") { nodes.size }
@@ -172,7 +172,7 @@ class P2CBalancer[Req, Rep](
         n.load.decrementAndGet()
       }
   }
-  
+
   @tailrec
   private[this] def pick(nodes: Nodes[Req, Rep], count: Int): Node[Req, Rep] = {
     if (count == 0)
@@ -210,7 +210,7 @@ class P2CBalancer[Req, Rep](
     case Rebuild(newList) =>
       val newFactories = (newList map { case (f, _) => f }).toSet
       val (transfer, closed) = nodes.vector partition (newFactories contains _.factory)
-  
+
       for (Node(factory, _, _) <- closed)
         factory.close()
       removes.incr(closed.size)
@@ -228,10 +228,10 @@ class P2CBalancer[Req, Rep](
 
     case Reweigh(ns) if ns == nodes =>
       nodes = nodes.reweighted()
-    
+
     case Reweigh(_stale) =>
   }
-  
+
   // Start your engines!
   underlying observe { newList => update(Rebuild(newList)) }
 

@@ -23,7 +23,7 @@ class HttpServerDispatcher[REQUEST <: Request](
   private[this] def chunkOfBuf(buf: Buf): HttpChunk = buf match {
     case Buf.Eof =>
       HttpChunk.LAST_CHUNK
-    case cb: ChannelBufferBuf => 
+    case cb: ChannelBufferBuf =>
       new DefaultHttpChunk(cb.buf)
     case buf =>
       val bytes = new Array[Byte](buf.length)
@@ -49,7 +49,7 @@ class HttpServerDispatcher[REQUEST <: Request](
           case _ => new InetSocketAddress(0)
         }
       }.asInstanceOf[REQUEST]
-      
+
       service(req)
 
     case invalid =>

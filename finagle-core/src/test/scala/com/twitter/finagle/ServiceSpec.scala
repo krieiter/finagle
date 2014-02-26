@@ -41,7 +41,7 @@ class ServiceSpec extends SpecificationWithJUnit with Mockito {
       there was one(service)("ok")
     }
   }
-  
+
   "ServiceFactory.flatMap" should {
     "release underlying service on failure" in {
       val exc = new Exception

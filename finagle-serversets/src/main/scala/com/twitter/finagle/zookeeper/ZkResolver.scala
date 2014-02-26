@@ -58,7 +58,7 @@ private class ZkOffer(serverSet: ServerSet, path: String)
       } catch {
         case exc: MonitorException =>
           // There are certain path permission checks in the serverset library
-          // that can cause exceptions here. We'll send an empty set (which 
+          // that can cause exceptions here. We'll send an empty set (which
           // becomes a negative resolution), but keep on trying.
           inbound !! Set.empty
           Thread.sleep(5000)
@@ -72,7 +72,7 @@ private class ZkOffer(serverSet: ServerSet, path: String)
 
 class ZkResolver(factory: ZkClientFactory) extends Resolver {
   val scheme = "zk"
-  
+
   // With the current serverset client, instances are maintained
   // forever; additional resource leaks aren't created by caching
   // instances here.
@@ -82,10 +82,10 @@ class ZkResolver(factory: ZkClientFactory) extends Resolver {
   def this() = this(DefaultZkClientFactory)
 
   def resolve(
-      zkHosts: Set[InetSocketAddress], 
-      path: String, 
+      zkHosts: Set[InetSocketAddress],
+      path: String,
       endpoint: Option[String] = None,
-      shardId: Option[Int] = None): Var[Addr] = 
+      shardId: Option[Int] = None): Var[Addr] =
     synchronized {
       cache.getOrElseUpdate(
         (zkHosts, path, endpoint, shardId),
@@ -103,7 +103,7 @@ class ZkResolver(factory: ZkClientFactory) extends Resolver {
         case inst: ServiceInstance => inst.getServiceEndpoint()
       }
     }
-    
+
     val filterShardId: PartialFunction[ServiceInstance, ServiceInstance] = shardId match {
       case Some(id) => {
         case inst if inst.isSetShard && inst.shard == id => inst

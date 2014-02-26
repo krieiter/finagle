@@ -18,7 +18,7 @@ class ServerSet2Test extends FunSuite {
       Descriptor(Selector.Member("3"), 3.1, 1)))
     val v2 = Vector(Seq(Descriptor(Selector.Member("2"), 2.0, 1)))
     val vecs = Set(v1, v2)
-    
+
     assert(ServerSet2.weighted(ents, vecs) === Set(
       ep(1) -> 1.1,
       ep(2) -> 2.8,

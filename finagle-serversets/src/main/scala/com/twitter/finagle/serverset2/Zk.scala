@@ -73,17 +73,17 @@ private trait Zk {
 
   protected[serverset2] implicit val timer: Timer
 
-  protected def retryBackoffs = 
+  protected def retryBackoffs =
     (Backoff.exponential(10.milliseconds, 2) take 3) ++ Backoff.const(1.second)
 
   private def safeRetry[T](go: => Future[T], backoff: Stream[Duration])
-      (implicit timer: Timer): Future[T] = 
+      (implicit timer: Timer): Future[T] =
     go rescue {
       case exc: KeeperException.ConnectionLossException =>
         backoff match {
           case wait #:: rest =>
             Future.sleep(wait) before safeRetry(go, rest)
-          case _ => 
+          case _ =>
             Future.exception(exc)
         }
   }
@@ -95,12 +95,12 @@ private trait Zk {
    * The returned Var is asynchronous: watches aren't reissued
    * when the Var is no longer observed.
    */
-  private def op[T](which: String, arg: String)(go: => Future[Watched[T]]): Var[Op[T]] = 
+  private def op[T](which: String, arg: String)(go: => Future[Watched[T]]): Var[Op[T]] =
     Var.async(Op.Pending: Op[T]) { v =>
       @volatile var closed = false
-      def loop(): Unit = 
+      def loop(): Unit =
         if (!closed) safeRetry(go, retryBackoffs) respond {
-          case Throw(exc) => 
+          case Throw(exc) =>
             v() = Op.Fail(exc)
           case Return((stat, w)) =>
             v() = Op.Ok(stat)
@@ -119,17 +119,17 @@ private trait Zk {
         }
 
       loop()
-      
+
       Closable.make { deadline =>
         closed = true
         Future.Done
       }
     }
-   
+
    private val existsWatchOp = Memoize { path: String =>
      op("existsOf", path) { existsWatch(path) }
    }
-   
+
    private val childrenWatchOp = Memoize { path: String =>
      op("childrenWatchOp", path) { getChildrenWatch(path) }
    }
@@ -167,7 +167,7 @@ private trait Zk {
         case Throw(exc) => v() = Op.Fail(exc)
         case Return((_, buf)) => v() = Op.Ok(buf)
       }
-      
+
       Closable.nop
     }
   }
@@ -209,7 +209,7 @@ private trait ZkFactory {
 }
 
 private class FnZkFactory(
-    newZk: (String, Duration) => Zk, 
+    newZk: (String, Duration) => Zk,
     timeout: Duration = 3.seconds) extends ZkFactory {
 
   def apply(hosts: String): Zk = newZk(hosts, timeout)
@@ -218,7 +218,7 @@ private class FnZkFactory(
 }
 
 private object Zk extends FnZkFactory(
-    (hosts, timeout) => new ZooKeeperZk(w => 
+    (hosts, timeout) => new ZooKeeperZk(w =>
       new ZooKeeper(hosts, timeout.inMilliseconds.toInt, w))) {
 
   val nil: Zk = new Zk {
@@ -226,20 +226,20 @@ private object Zk extends FnZkFactory(
 
     def exists(path: String): Future[Option[Stat]] = Future.never
     def existsWatch(path: String): Future[Watched[Option[Stat]]] = Future.never
-  
+
     def getChildren(path: String): Future[Seq[String]] = Future.never
     def getChildrenWatch(path: String): Future[Watched[Seq[String]]] = Future.never
-  
+
     def getData(path: String): Future[(Stat, Buf)] = Future.never
     def getDataWatch(path: String): Future[Watched[(Stat, Buf)]] = Future.never
-  
+
     def sync(path: String): Future[Unit] = Future.never
     def close(): Future[Unit] = Future.never
 
     def sessionId: Long = -1
     def sessionPasswd: Buf = Buf.Empty
     def sessionTimeout: Duration = 0.seconds
-  
+
     /**
      * Represents the session state.
      */
@@ -259,7 +259,7 @@ private object Zk extends FnZkFactory(
 
   def retrying(
       backoff: Duration,
-      newZk: () => Zk, 
+      newZk: () => Zk,
       timer: Timer = DefaultTimer.twitter): Var[Zk] = Var.async(nil) { u =>
     @volatile var closing = false
     @volatile var zk: Zk = Zk.nil
@@ -270,7 +270,7 @@ private object Zk extends FnZkFactory(
       zk.close()
       zk = newZk()
       u() = zk
-      val whenUnhealthy = 
+      val whenUnhealthy =
         zk.state.observeUntil(_ == WatchState.SessionState(KeeperState.Expired))
       whenUnhealthy onSuccess { _ =>
         timer.doLater(backoff) {

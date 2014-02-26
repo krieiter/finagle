@@ -13,7 +13,7 @@ object Bridge {
    * endpoint. In reality this is just as small utility to wire up dispatchers
    * with transporters, but its explicit name provides clarity and purpose.
    *
-   * It is a bridge in the sense that it reconciles the stream-oriented 
+   * It is a bridge in the sense that it reconciles the stream-oriented
    * Transport, with the request-response-oriented ServiceFactory.
    *
    * @param connect Connect to the endpoint named by the given

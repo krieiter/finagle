@@ -31,7 +31,7 @@ class UpdaterTest extends FunSuite {
     thr.start()
     first.await()
     assert(worked === Seq(Work(0)))
-    
+
     u(Work(3))
     u(Work(10))
     u(Work(1))

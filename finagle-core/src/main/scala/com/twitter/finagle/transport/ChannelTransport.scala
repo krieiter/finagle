@@ -53,14 +53,14 @@ class ChannelTransport[In, Out](ch: Channel)
         // of interest ops.
         //
         // This can't deadlock, because:
-        //    #1 Updates from other threads are enqueued onto a pending 
+        //    #1 Updates from other threads are enqueued onto a pending
         //    operations queue for the owner thread, and they never wait
         //    for completion.
         //    #2 Within the context of this thread, Channel.isReadable cannot
         //    change while we're invoking setReadable(): subsequent channel
         //    state events will be terminated early by need()'s check.
         need(0)
-        
+
       case e: ChannelStateEvent
       if e.getState == ChannelState.CONNECTED
           && e.getValue == java.lang.Boolean.TRUE =>

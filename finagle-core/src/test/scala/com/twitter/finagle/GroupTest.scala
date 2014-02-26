@@ -58,7 +58,7 @@ class GroupTest extends FunSuite {
     group() = Set(1,3,4,5,6)
     assert((group2() &~ snap) == Set(12))
     assert((snap &~ group2()) == Set(4))
-    
+
     // Object identity:
     assert(group2() eq group2())
   }
@@ -92,7 +92,7 @@ class GroupTest extends FunSuite {
     assert(combined.members == Set(1, 2, 3, 4, 5, 6))
     assert(combined.members == combined.members)
   }
-  
+
   test("object identity") {
     val g = Group.mutable[Object]()
     g() += new Object{}

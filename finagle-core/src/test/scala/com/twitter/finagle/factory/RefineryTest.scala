@@ -38,7 +38,7 @@ class RefineryTest extends FunSuite with MockitoSugar {
     when(newFactory(any[Name])).thenReturn(default)
 
     val factory = new Refinery(
-      Name("/mypath"), newFactory, 
+      Name("/mypath"), newFactory,
       ctx)
   }
 
@@ -49,7 +49,7 @@ class RefineryTest extends FunSuite with MockitoSugar {
     val arg = ArgumentCaptor.forClass(classOf[Name])
     verify(newFactory, times(1)).apply(arg.capture())
     arg.getValue().bind() match {
-      case Var.Sampled(defaultName.addr) => 
+      case Var.Sampled(defaultName.addr) =>
       case _ => fail()
     }
 
@@ -59,7 +59,7 @@ class RefineryTest extends FunSuite with MockitoSugar {
 
     assert(factory.isAvailable)
     verify(default).isAvailable
-    
+
     // We don't create additional factories.
     factory(ClientConnection.nil)
     verify(newFactory, times(1)).apply(any[Name])
@@ -82,7 +82,7 @@ class RefineryTest extends FunSuite with MockitoSugar {
     when(factory1(any[ClientConnection]))
       .thenReturn(Future.value(service1))
     when(factory1.close(any[Time])).thenReturn(Future.Done)
-    
+
     when(newFactory(any[Name])).thenAnswer(
       new Answer[ServiceFactory[Int, Int]] {
         def answer(invk: InvocationOnMock) = {
@@ -112,11 +112,11 @@ class RefineryTest extends FunSuite with MockitoSugar {
   test("reestablishes bases") {
     val CTX = newCtx()
     import CTX._
-    
+
     val service = mock[Service[Int, Int]]
     when(factory(any[ClientConnection]))
       .thenReturn(Future.value(service))
-    
+
     verify(newFactory, times(1)).apply(any[Name])
     Await.result(factory())
     verify(newFactory, times(1)).apply(any[Name])

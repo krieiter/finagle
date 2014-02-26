@@ -8,7 +8,7 @@ case class ChannelBufferBuf(buf: ChannelBuffer) extends Buf {
     val dup = buf.duplicate()
     dup.readBytes(bytes, off, dup.readableBytes)
   }
-  
+
   def slice(i: Int, j: Int): Buf =
     if (i == 0 && j > length) this
     else if (i >= length) Buf.Empty

@@ -71,8 +71,8 @@ class ZkResolverTest extends FunSuite with BeforeAndAfter {
     val epepAddr = RandomSocket.nextAddress
 
     val status = serverSet.join(
-      serviceAddr, 
-      Map[String, InetSocketAddress]("epep" -> epepAddr).asJava, 
+      serviceAddr,
+      Map[String, InetSocketAddress]("epep" -> epepAddr).asJava,
       ALIVE
     )
 
@@ -80,7 +80,7 @@ class ZkResolverTest extends FunSuite with BeforeAndAfter {
       assert(Var.sample(va1) === Addr.Bound(serviceAddr))
       assert(Var.sample(va2) === Addr.Bound(epepAddr))
     }
-    
+
     status.leave()
 
     eventually {

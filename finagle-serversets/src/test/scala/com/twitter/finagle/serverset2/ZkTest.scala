@@ -14,32 +14,32 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 
 sealed private trait ZkOp { type Res; val res = new Promise[Res] }
 private object ZkOp {
-  case class Exists(path: String) 
+  case class Exists(path: String)
       extends { type Res = Option[Stat] }
       with ZkOp
 
   case class ExistsWatch(path: String)
-      extends { type Res = Zk#Watched[Option[Stat]] } 
+      extends { type Res = Zk#Watched[Option[Stat]] }
       with ZkOp
 
   case class GetChildren(path: String)
-      extends { type Res = Seq[String] } 
+      extends { type Res = Seq[String] }
       with ZkOp
 
   case class GetChildrenWatch(path: String)
-      extends { type Res = Zk#Watched[Seq[String]] } 
+      extends { type Res = Zk#Watched[Seq[String]] }
       with ZkOp
 
   case class GetData(path: String)
-      extends { type Res = (Stat, Buf) } 
+      extends { type Res = (Stat, Buf) }
       with ZkOp
 
   case class GetDataWatch(path: String)
-      extends { type Res = Zk#Watched[(Stat, Buf)] } 
+      extends { type Res = Zk#Watched[(Stat, Buf)] }
       with ZkOp
 
   case class Sync(path: String)
-      extends { type Res = Unit } 
+      extends { type Res = Unit }
       with ZkOp
 
   case class Close()
@@ -49,9 +49,9 @@ private object ZkOp {
 
 private class OpqueueZk(
     timerIn: Timer,
-    val sessionId: Long, 
+    val sessionId: Long,
     val sessionPasswd: Buf,
-    val sessionTimeout: Duration, 
+    val sessionTimeout: Duration,
     val state: Var[WatchState]) extends Zk {
 
   def this(timer: Timer) = this(
@@ -59,7 +59,7 @@ private class OpqueueZk(
     Duration.Zero, Var.value(WatchState.Pending))
 
   import ZkOp._
-  
+
   protected[serverset2] implicit val timer = timerIn
 
   @volatile var opq: immutable.Queue[ZkOp] = immutable.Queue.empty
@@ -97,7 +97,7 @@ class ZkTest extends FunSuite {
     val o = v.observeTo(ref)
     assert(zk.opq === Seq(ExistsWatch("/foo/bar")))
     assert(ref.get === Op.Pending)
-    
+
     assert(timer.tasks.isEmpty)
     zk.opq(0).res() = Throw(new KeeperException.ConnectionLossException)
     assert(timer.tasks.size === 1)
@@ -105,22 +105,22 @@ class ZkTest extends FunSuite {
     timer.tick()
     assert(zk.opq === Seq(ExistsWatch("/foo/bar"), ExistsWatch("/foo/bar")))
     assert(ref.get === Op.Pending)
-    
+
     zk.opq(1).res() = Throw(new KeeperException.SessionExpiredException)
     assert(zk.opq === Seq(ExistsWatch("/foo/bar"), ExistsWatch("/foo/bar")))
     val Op.Fail(exc) = ref.get
     assert(exc.isInstanceOf[KeeperException.SessionExpiredException])
   }}
-  
+
   test("Zk.childrenOf") { Time.withCurrentTimeFrozen { tc =>
     val timer = new MockTimer
     val zk = new OpqueueZk(timer)
-    
+
     val v = zk.childrenOf("/foo/bar")
     val ref = new AtomicReference[Op[Set[String]]]
     v.observeTo(ref)
     assert(ref.get === Op.Pending)
-    
+
     val Seq(ew@ExistsWatch("/foo/bar")) = zk.opq
     val ewwatchv = Var[WatchState](WatchState.Pending)
     ew.res() = Return((None, ewwatchv))

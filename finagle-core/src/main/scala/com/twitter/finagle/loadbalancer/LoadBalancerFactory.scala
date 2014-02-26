@@ -41,7 +41,7 @@ object DefaultBalancerFactory extends WeightedLoadBalancerFactory {
       case "choice" => P2CBalancerFactory
       case "heap" => HeapBalancerFactory.toWeighted
       case x =>
-        Logger.getLogger("finagle").log(Level.WARNING, 
+        Logger.getLogger("finagle").log(Level.WARNING,
           "Invalid load balancer %s, using balancer \"heap\"".format(x))
         HeapBalancerFactory.toWeighted
     }

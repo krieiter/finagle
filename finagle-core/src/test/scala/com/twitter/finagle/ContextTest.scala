@@ -7,7 +7,7 @@ import com.twitter.io.Buf
 
 class MyContext extends ContextHandler {
   @volatile var allBuf = Buf.Empty
-  
+
   val key = Buf.Utf8("com.twitter.finagle.MyContext")
 
   def handle(buf: Buf) {

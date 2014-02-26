@@ -25,7 +25,7 @@ private class ZkSnooper(self: Zk, print: String => Unit) extends Zk {
   def existsWatch(path: String): Future[Watched[Option[Stat]]] =
     printOp("existsWatch", self.existsWatch(path), path)
 
-  def getChildren(path: String): Future[Seq[String]] = 
+  def getChildren(path: String): Future[Seq[String]] =
     printOp("getChildren", self.getChildren(path), path)
 
   def getChildrenWatch(path: String): Future[Watched[Seq[String]]] =

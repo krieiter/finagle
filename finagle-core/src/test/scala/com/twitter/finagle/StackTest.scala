@@ -12,7 +12,7 @@ class StackTest extends FunSuite {
     stack.push("conc.20", (l: List[Int]) => 20 :: l)
     stack.result
   }
-  
+
   test("Stack.make") {
     assert(newStack().make(Stack.Params.empty) === Seq(20,10,1,2,3,4))
   }
@@ -24,10 +24,10 @@ class StackTest extends FunSuite {
       case Stack.Node("conc.10", _, next) =>
         next
     }
-    
+
     assert(stack.make(Stack.Params.empty) === Seq(30,1,2,3,4))
   }
-  
+
   test("Stack.++") {
     val stack = newStack() ++ newStack()
     assert(stack.make(Stack.Params.empty) === Seq(20,10,20,10,1,2,3,4))
@@ -37,7 +37,7 @@ class StackTest extends FunSuite {
   implicit object TestParam extends Stack.Param[TestParam] {
     val default = TestParam(1)
   }
-  
+
   test("Params") {
     val params = Stack.Params.empty
     val params2 = params + TestParam(999)

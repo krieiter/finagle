@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.twitter.util.NonFatal
 import java.net.InetSocketAddress
 
-/** 
+/**
  * Represents one logical serverset2 entry.
  */
 sealed trait Entry
 
-/** 
+/**
  * Endpoints encode a destination announced via serversets.
  *
  * @param name The endpoint name. None describes a default service
@@ -23,12 +23,12 @@ sealed trait Entry
  *
  * @param status The endpoint's status.
  *
- * @param memberId The endpoint's member id, 
+ * @param memberId The endpoint's member id,
  * used as a foreign key for endpoints.
  */
 case class Endpoint(
   name: Option[String],
-  addr: InetSocketAddress, 
+  addr: InetSocketAddress,
   shard: Option[Int],
   status: Endpoint.Status.Value,
   memberId: String
@@ -49,7 +49,7 @@ object Entry {
 
 object Endpoint {
   val Empty = Endpoint(
-    None, new InetSocketAddress(0), 
+    None, new InetSocketAddress(0),
     None, Endpoint.Status.Unknown, "")
 
   object Status extends Enumeration {
@@ -66,7 +66,7 @@ object Endpoint {
 
     def ofString(s: String): Option[Value] = map.get(s)
   }
-  
+
   private def parseEndpoint(m: Any): Option[InetSocketAddress] =
     m match {
       case ep: java.util.Map[_, _] =>
@@ -90,9 +90,9 @@ object Endpoint {
 
     val shard = for { IntObj(s) <- d("shard") } yield s
     val status = {
-      for { 
+      for {
         StringObj(s) <- d("status")
-        status <- Status.ofString(s) 
+        status <- Status.ofString(s)
       } yield status
     } getOrElse Endpoint.Status.Unknown
 
@@ -110,7 +110,7 @@ object Endpoint {
       if key.isInstanceOf[String]
       addr <- parseEndpoint(map.get(key))
     } eps += tmpl.copy(name=Some(key), addr=addr)
-    
+
     eps.result
   }
 }

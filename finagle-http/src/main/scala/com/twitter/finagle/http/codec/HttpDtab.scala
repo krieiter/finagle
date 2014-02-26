@@ -22,18 +22,18 @@ import java.nio.charset.Charset
 object HttpDtab {
   private val Prefix = "X-Dtab-"
   private val Maxsize = 100
-  private val Utf8 = Charset.forName("UTF-8") 
-  private val Ascii = Charset.forName("ASCII") 
+  private val Utf8 = Charset.forName("UTF-8")
+  private val Ascii = Charset.forName("ASCII")
 
   private val indexstr: Int => String =
     ((0 until Maxsize) map(i => i -> "%02d".format(i))).toMap
-  
+
   private def encodeValue(v: String): String = {
     val buf = ChannelBuffers.wrappedBuffer(v.getBytes(Utf8))
     val buf64 = Base64.encode(buf)
     buf64.toString(Ascii)
   }
-  
+
   private def decodeValue(v: String): String = {
     val buf64 = ChannelBuffers.wrappedBuffer(v.getBytes(Ascii))
     val buf = Base64.decode(buf64)
@@ -52,7 +52,7 @@ object HttpDtab {
   def write(dtab: Dtab, msg: HttpMessage) {
     if (dtab.isEmpty)
       return
-    
+
     if (dtab.size >= Maxsize) {
       throw new IllegalArgumentException(
         "Dtabs with length greater than 100 are not serializable with HTTP")
@@ -99,7 +99,7 @@ object HttpDtab {
       if (prefix(prefix.size-1) != 'A' || dest(dest.size-1) != 'B')
         return Dtab.empty
 
-      dentries(i) = 
+      dentries(i) =
         try Dentry(
           decodeValue(msg.headers.get(prefix)),
           decodeValue(msg.headers.get(dest)))

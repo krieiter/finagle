@@ -11,7 +11,7 @@ import java.net.SocketAddress
  * a one-off basis.
  */
 private[finagle] class Refinery[Req, Rep](
-  dest: Name, 
+  dest: Name,
   newFactory: Name => ServiceFactory[Req, Rep],
   ctx: DtabCtx = Dtab
 ) extends ServiceFactory[Req, Rep] {
@@ -21,7 +21,7 @@ private[finagle] class Refinery[Req, Rep](
 
   private[this] def newBase(): Unit = synchronized {
     if (ctx.base eq base) return
-    
+
     // Note that his can possibly disrupt outstanding requests when
     // the base closes. However, dynamically changing bases should
     // basically never happen, and if it does, only on startup.

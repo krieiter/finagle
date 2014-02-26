@@ -16,9 +16,9 @@ class HttpDtabTest extends FunSuite {
     dest <- okDests
   } yield Dentry(prefix, dest)
 
-  val okDtabs = 
+  val okDtabs =
     Dtab.empty +: (okDentries.permutations map(ds => Dtab(ds))).toIndexedSeq
-  
+
   def newMsg(): HttpMessage =
     new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, "/")
 
@@ -30,14 +30,14 @@ class HttpDtabTest extends FunSuite {
       assert(Equiv[Dtab].equiv(dtab, dtab1))
     }
   }
-  
+
   test("Invalid: no shared prefix") {
     val m = newMsg()
     m.headers.set("X-Dtab-01-A", "a")
     m.headers.set("X-Dtab-02-B", "a")
     assert(HttpDtab.read(m) === Dtab.empty)
   }
-  
+
   test("Invalid: missing entry") {
     val m = newMsg()
     m.headers.set("X-Dtab-01-A", "a")
@@ -45,30 +45,30 @@ class HttpDtabTest extends FunSuite {
     m.headers.set("X-Dtab-02-B", "a")
     assert(HttpDtab.read(m) === Dtab.empty)
   }
-  
+
   test("Invalid: non-ASCII encoding") {
     val m = newMsg()
     m.headers.set("X-Dtab-01-A", "☺")
     m.headers.set("X-Dtab-01-B", "☹")
     assert(HttpDtab.read(m) == Dtab.empty)
-  }  
-  
+  }
+
   test("clear()") {
     val m = newMsg()
     HttpDtab.write(Dtab.empty.delegated("/a", "/b").delegated("/a", "/c"), m)
     m.headers.set("onetwothree", "123")
-    
+
     val headers = Seq(
-      "X-Dtab-00-A", "X-Dtab-00-B", 
+      "X-Dtab-00-A", "X-Dtab-00-B",
       "X-Dtab-01-A", "X-Dtab-01-B")
-      
+
     for (h <- headers)
       assert(m.headers.contains(h))
-    
+
     assert(m.headers.contains("onetwothree"))
-    
+
     HttpDtab.clear(m)
-    
+
     assert(m.headers.contains("onetwothree"))
     for (h <- headers)
       assert(!m.headers.contains(h))

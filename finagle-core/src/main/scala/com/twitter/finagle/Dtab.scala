@@ -15,7 +15,7 @@ Note: Dtabs are currently experimental, and
 are guaranteed to evolve substantially beyond
 their current manifestation. Use with care.
 
-TODO: better handling of paths. They 
+TODO: better handling of paths. They
 need to be normalized, and probably also
 tokenized throughout.
 
@@ -33,7 +33,7 @@ tokenized throughout.
  * Construct a new Dtab with the given delegation
  * entry appended.
  */
-private[twitter] case class Dtab(dentries0: IndexedSeq[Dentry]) 
+private[twitter] case class Dtab(dentries0: IndexedSeq[Dentry])
     extends IndexedSeq[Dentry] {
   private[this] lazy val dentries = dentries0.reverse
 
@@ -45,7 +45,7 @@ private[twitter] case class Dtab(dentries0: IndexedSeq[Dentry])
    * variable (observable) representation of the bound
    * address, guaranteed to be free of further delegations.
    */
-  def bind(path: String): Var[Addr] = 
+  def bind(path: String): Var[Addr] =
     bind(Path.split(path), dentries, 100)
 
   /**
@@ -55,7 +55,7 @@ private[twitter] case class Dtab(dentries0: IndexedSeq[Dentry])
    * The name is guaranteed to not be delegated in turn,
    * though it can return partially bound addresses.
    */
-  def refine(name: Name): Name = 
+  def refine(name: Name): Name =
     RefinedName(name, this, "")
 
   private def bind(elems: Seq[String], ents: Seq[Dentry], depth: Int): Var[Addr] = {
@@ -64,7 +64,7 @@ private[twitter] case class Dtab(dentries0: IndexedSeq[Dentry])
       case Seq(d, ds@_*) if elems startsWith d.prefixElems =>
         val stripped = elems drop d.prefixElems.size
         d.bind(stripped mkString "/") flatMap {
-          case Addr.Neg => 
+          case Addr.Neg =>
             bind(elems, ds, depth)
           case Addr.Delegated(path) =>
             bind(Path.split(path), dentries, depth-1) flatMap {
@@ -87,11 +87,11 @@ private[twitter] case class Dtab(dentries0: IndexedSeq[Dentry])
     Dtab(dentries0 :+ dentry)
 
   /** $delegated */
-  def delegated(prefix: String, dst: String): Dtab = 
+  def delegated(prefix: String, dst: String): Dtab =
     delegated(Dentry(prefix, dst))
 
   /** $delegated */
-  def delegated(prefix: String, dst: Name): Dtab = 
+  def delegated(prefix: String, dst: Name): Dtab =
     delegated(Dentry(prefix, dst))
 
   /**
@@ -161,14 +161,14 @@ private[twitter] object Dentry {
 }
 
 /**
- * A context comprising a local current dtab 
+ * A context comprising a local current dtab
  * and a global base dtab.
  */
 private[twitter] trait DtabCtx {
   def base: Dtab
 
   /**
-   * Set the base Dtab. 
+   * Set the base Dtab.
    */
   def base_=(newBase: Dtab)
 
@@ -207,7 +207,7 @@ private[twitter] trait DtabCtx {
   def delegate(dentry: Dentry) {
     this() = this() delegated dentry
   }
-  
+
   def delegate(dtab: Dtab) {
     this() = this() delegated dtab
   }
@@ -231,11 +231,11 @@ private[twitter] object Dtab extends DtabCtx {
       def apply(_ign: TraversableOnce[Dentry]): DtabBuilder = newBuilder
       def apply(): DtabBuilder = newBuilder
     }
-    
+
   val empty = Dtab(Vector.empty)
 
   /**
-   * Computes functional equivalence (not necessarily 
+   * Computes functional equivalence (not necessarily
    * object equivalence) of `d1` and `d2`.
    */
   implicit val equiv: Equiv[Dtab] = new Equiv[Dtab] {
@@ -260,7 +260,7 @@ private[twitter] object Dtab extends DtabCtx {
   def apply(): Dtab = l() getOrElse base
   def update(dtab: Dtab) { l() = dtab }
   def clear() { l.clear() }
- 
+
   def unwind[T](f: => T): T = {
     val save = l()
     try f finally l.set(save)
@@ -282,11 +282,11 @@ private[twitter] final class DtabBuilder extends Builder[Dentry, Dtab] {
 
 private case class RefinedName(parent: Name, dtab: Dtab, suffix: String)
     extends Name {
-  override def enter(path: String) = 
+  override def enter(path: String) =
     RefinedName(parent, dtab, Path.join(suffix, path))
 
   def bind() = parent.bind() flatMap {
-    case Addr.Delegated(path) => 
+    case Addr.Delegated(path) =>
       dtab.bind(Path.join(path, suffix))
     case a@Addr.Bound(_) if suffix.isEmpty => Var.value(a)
     case Addr.Bound(sockaddrs) =>
@@ -295,6 +295,6 @@ private case class RefinedName(parent: Name, dtab: Dtab, suffix: String)
       Var.value(Addr.Bound(partial))
     case a => Var.value(a)
   }
-  
+
   val reified = "fail!"
 }

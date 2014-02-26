@@ -9,12 +9,12 @@ import org.apache.zookeeper.{ZooKeeper, KeeperException, Watcher}
 import scala.collection.JavaConverters._
 
 /**
- * An implementation of Zk using an underlying 
+ * An implementation of Zk using an underlying
  * Apache ZooKeeper constructor.
  */
 private class ZooKeeperZk(newZk: Watcher => ZooKeeper) extends Zk {
   import Zk.newWatcher
-  
+
   protected[serverset2] implicit val timer = DefaultTimer.twitter
 
   private[this] val watcher = newWatcher()
@@ -97,8 +97,8 @@ private class ZooKeeperZk(newZk: Watcher => ZooKeeper) extends Zk {
     val watcher = newWatcher()
     val cb = new DataCallback {
       def processResult(
-          rc: Int, path: String, 
-          ctx: Object, data: Array[Byte], 
+          rc: Int, path: String,
+          ctx: Object, data: Array[Byte],
           stat: Stat) {
         p() = determine(rc, ((stat, Buf.ByteArray(data)), watcher.state))
       }
@@ -129,7 +129,7 @@ private class ZooKeeperZk(newZk: Watcher => ZooKeeper) extends Zk {
     case null => Buf.Empty
     case bytes => Buf.ByteArray(bytes)
   }
-  def sessionTimeout: Duration = 
+  def sessionTimeout: Duration =
     Duration.fromMilliseconds(zk.getSessionTimeout)
 
   override def toString = "Zk(%s)".format(zk)

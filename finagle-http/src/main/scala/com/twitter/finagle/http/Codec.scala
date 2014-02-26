@@ -194,9 +194,9 @@ case class Http(
           Filter.identity[HttpRequest, HttpResponse]
         }
 
-        tracing andThen 
-          dtab andThen 
-          checkRequest andThen 
+        tracing andThen
+          dtab andThen
+          checkRequest andThen
           underlying
       }
     }
@@ -383,7 +383,7 @@ case class RichHttp[REQUEST <: Request](
       def pipelineFactory = httpFactory.server(config).pipelineFactory
 
       override def newServerDispatcher(
-          transport: Transport[Any, Any], 
+          transport: Transport[Any, Any],
           service: Service[REQUEST, Response]): Closable =
         new HttpServerDispatcher(new HttpTransport(transport), service)
 

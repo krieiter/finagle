@@ -13,7 +13,7 @@ import scala.annotation.tailrec
  * factory fails or the current service is unavailable.
  */
 class ReusingPool[Req, Rep](
-  underlying: ServiceFactory[Req, Rep], 
+  underlying: ServiceFactory[Req, Rep],
   statsReceiver: StatsReceiver)
 extends ServiceFactoryProxy[Req, Rep](underlying) {
   private[this] object stats {

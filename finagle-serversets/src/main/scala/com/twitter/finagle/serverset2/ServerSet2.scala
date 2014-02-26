@@ -36,9 +36,9 @@ class Zk2Resolver extends Resolver {
   private[this] def serverSetOf(hosts: String) = synchronized {
     val key = hosts.split(",").sorted mkString ","
     if (!(cache contains key)) {
-      val newZk = if (chatty()) 
-          () => new ZkSnooper(Zk(hosts), eprintln(_)) 
-        else 
+      val newZk = if (chatty())
+          () => new ZkSnooper(Zk(hosts), eprintln(_))
+        else
           () => Zk(hosts)
       val vzk = Zk.retrying(ServerSet2.DefaultRetrying, newZk)
       cache += key -> ServerSet2(vzk)
@@ -49,7 +49,7 @@ class Zk2Resolver extends Resolver {
   }
 
   def addrOf(
-      hosts: String, path: String, 
+      hosts: String, path: String,
       endpoint: Option[String]): Var[Addr] = {
     serverSetOf(hosts).weightedOf(path) map {
       case Op.Pending => Addr.Pending
@@ -99,8 +99,8 @@ private trait ServerSet2 {
 
 private object ServerSet2 {
   val DefaultRetrying = 5.seconds
-  
-  def apply(hosts: String): ServerSet2 = 
+
+  def apply(hosts: String): ServerSet2 =
     apply(Zk.retrying(DefaultRetrying, () => Zk(hosts)))
 
   def apply(zk: Var[Zk]): ServerSet2 =
@@ -122,7 +122,7 @@ private class VarServerSet2(v: Var[ServerSet2]) extends ServerSet2 {
 private object ZkServerSet2 {
   private val Utf8 = Charset.forName("UTF-8")
   private val EndpointPrefix = "member_"
-  private val VectorPrefix = "vector_" 
+  private val VectorPrefix = "vector_"
 }
 
 private case class ZkServerSet2(zk: Zk) extends ServerSet2 {
@@ -134,8 +134,8 @@ private case class ZkServerSet2(zk: Zk) extends ServerSet2 {
     }
 
     Var.async(Op.Pending: Op[Map[String, Buf]]) { u =>
-      v observe { x => 
-        u() = x 
+      v observe { x =>
+        u() = x
       }
     }
   }

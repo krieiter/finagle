@@ -49,7 +49,7 @@ class ChannelClosingHandlerSpec extends SpecificationWithJUnit with Mockito {
 
       "before channel has been attached" in {
         handler.beforeAdd(ctx)
-        there was one(channel).close()        
+        there was one(channel).close()
       }
     }
   }
